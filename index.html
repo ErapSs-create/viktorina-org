@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Викторина · «Комиссар» (1967)</title>
+<style>
+  :root {
+    --bg-dark: #1A0F12;
+    --bg-card: #F5EFEA;
+    --cherry: #8B0E1A;
+    --cherry-br: #B71C2E;
+    --gold: #C9A24E;
+    --ink: #1A0F12;
+    --ink-soft: #3D2C30;
+    --line: #C9B8A8;
+    --white: #FFFFFF;
+    --green: #2E7D32;
+    --green-bg: #E8F5E9;
+    --red: #C62828;
+    --red-bg: #FFEBEE;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: 'Calibri', 'Trebuchet MS', sans-serif;
+    background: var(--bg-dark);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* === Декоративный фоновый акцент === */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(139,14,26,0.18) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes pulseCorrect {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.04); box-shadow: 0 0 0 8px rgba(46,125,50,0.18); }
+    100% { transform: scale(1); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
+  @keyframes scoreCount {
+    from { transform: scale(0.4); opacity: 0; }
+    50%  { transform: scale(1.15); }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200px 0; }
+    100% { background-position: 200px 0; }
+  }
+  @keyframes progressFill {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* === Header === */
+  .header {
+    text-align: center;
+    color: var(--white);
+    padding: 24px 0 32px;
+    border-bottom: 1px solid rgba(201, 162, 78, 0.25);
+    margin-bottom: 28px;
+    animation: fadeInDown 0.6s ease-out both;
+  }
+  .header .eyebrow {
+    font-family: 'Calibri', sans-serif;
+    font-size: 12px;
+    letter-spacing: 6px;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 12px;
+    animation: fadeIn 0.8s ease-out 0.2s both;
+  }
+  .header h1 {
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-size: 42px;
+    color: var(--white);
+    margin-bottom: 8px;
+    line-height: 1.1;
+    animation: fadeInDown 0.6s ease-out 0.1s both;
+  }
+  .header .year {
+    font-family: 'Georgia', serif;
+    font-size: 18px;
+    color: var(--cherry-br);
+    font-weight: 700;
+    letter-spacing: 6px;
+    animation: fadeIn 0.8s ease-out 0.3s both;
+  }
+  .header .desc {
+    margin-top: 16px;
+    font-size: 14px;
+    color: #C9B8A8;
+    font-style: italic;
+    animation: fadeIn 0.8s ease-out 0.4s both;
+  }
+
+  /* === Progress === */
+  .progress-wrap {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    animation: fadeIn 0.6s ease-out 0.5s both;
+  }
+  .progress-dot {
+    width: 32px;
+    height: 4px;
+    background: rgba(201, 184, 168, 0.25);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--cherry-br);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .progress-dot.done::after {
+    transform: scaleX(1);
+  }
+  .progress-dot.current::after {
+    transform: scaleX(1);
+    background: var(--gold);
+  }
+
+  /* === Card (each question) === */
+  .card {
+    background: var(--bg-card);
+    border-radius: 6px;
+    padding: 24px 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--cherry);
+  }
+  .q-num {
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-weight: 700;
+    color: var(--cherry);
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    animation: slideInLeft 0.5s ease-out 0.1s both;
+  }
+  .q-text {
+    font-family: 'Georgia', serif;
+    font-weight: 700;
+    font-size: 19px;
+    color: var(--ink);
+    line-height: 1.35;
+    margin-bottom: 18px;
+    animation: slideInLeft 0.5s ease-out 0.15s both;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option {
+    background: var(--white);
+    border: 2px solid transparent;
+    border-radius: 4px;
+    padding: 14px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    line-height: 1.35;
+    animation: slideInRight 0.4s ease-out both;
+    width: 100%;
+  }
+  .option:nth-child(1) { animation-delay: 0.20s; }
+  .option:nth-child(2) { animation-delay: 0.27s; }
+  .option:nth-child(3) { animation-delay: 0.34s; }
+  .option:nth-child(4) { animation-delay: 0.41s; }
+  .option:hover:not(:disabled) {
+    border-color: var(--cherry);
+    transform: translateX(2px);
+    box-shadow: 0 2px 12px rgba(139,14,26,0.15);
+  }
+  .option:active:not(:disabled) {
+    transform: translateX(2px) scale(0.99);
+  }
+  .option:disabled {
+    cursor: default;
+  }
+  .option .letter {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    color: var(--cherry);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    transition: background 0.2s, color 0.2s, transform 0.3s;
+  }
+  .option:hover:not(:disabled) .letter {
+    background: var(--cherry);
+    color: var(--white);
+    transform: rotate(-8deg);
+  }
+  .option .text {
+    flex: 1;
+  }
+  .option.correct {
+    background: var(--green-bg);
+    border-color: var(--green);
+    animation: pulseCorrect 0.7s ease-out;
+  }
+  .option.correct .letter {
+    background: var(--green);
+    color: var(--white);
+    transform: rotate(0);
+  }
+  .option.wrong {
+    background: var(--red-bg);
+    border-color: var(--red);
+    animation: shake 0.5s ease-out;
+  }
+  .option.wrong .letter {
+    background: var(--red);
+    color: var(--white);
+    transform: rotate(0);
+  }
+  .option .icon {
+    margin-left: auto;
+    font-size: 18px;
+    font-weight: 700;
+    animation: dropIn 0.4s ease-out;
+  }
+
+  /* === Explanation block — теперь имеет grid layout: текст и кнопка - отдельно === */
+  .explanation {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: rgba(139, 14, 26, 0.06);
+    border-left: 3px solid var(--cherry);
+    border-radius: 0 4px 4px 0;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    display: none;
+    animation: dropIn 0.4s ease-out both;
+  }
+  .explanation.show {
+    display: block;
+  }
+  .explanation .expl-text {
+    font-style: italic;
+    margin-bottom: 0; /* без бортика, кнопка вне этого блока */
+  }
+  .explanation strong {
+    font-style: normal;
+    color: var(--cherry);
+    font-weight: 700;
+  }
+
+  /* === Кнопка вынесена ОТДЕЛЬНО, не внутри объяснения === */
+  .next-wrap {
+    display: none;
+    margin-top: 16px;
+    text-align: center;
+    animation: fadeInUp 0.4s ease-out 0.2s both;
+  }
+  .next-wrap.show {
+    display: block;
+  }
+  .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    background: var(--cherry);
+    color: var(--white);
+    border: none;
+    border-radius: 4px;
+    font-family: 'Calibri', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(139,14,26,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+    transition: left 0.5s;
+  }
+  .btn:hover {
+    background: var(--cherry-br);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(139,14,26,0.45);
+  }
+  .btn:hover::after {
+    left: 120%;
+  }
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  /* === Result screen === */
+  .result {
+    background: var(--bg-card);
+    border-radius: 6px;
+    padding: 36px 24px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  .result::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--cherry), var(--gold), var(--cherry));
+  }
+  .result .verdict {
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-weight: 700;
+    color: var(--cherry);
+    font-size: 32px;
+    margin-bottom: 12px;
+    animation: fadeInDown 0.5s ease-out 0.2s both;
+  }
+  .result .score {
+    font-family: 'Georgia', serif;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+    margin: 16px 0;
+    animation: scoreCount 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+  }
+  .result .score .total {
+    color: var(--ink-soft);
+    font-size: 36px;
+  }
+  .result .message {
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin: 16px auto;
+    max-width: 480px;
+    line-height: 1.55;
+    animation: fadeIn 0.6s ease-out 0.7s both;
+  }
+  .result .divider {
+    width: 60px;
+    height: 2px;
+    background: var(--cherry);
+    margin: 18px auto;
+    animation: fadeIn 0.4s ease-out 0.6s both;
+  }
+  .result .btn {
+    margin-top: 16px;
+    animation: fadeInUp 0.5s ease-out 0.85s both;
+  }
+
+  /* === Footer === */
+  .footer {
+    text-align: center;
+    color: #C9B8A8;
+    font-size: 11px;
+    letter-spacing: 4px;
+    margin-top: 32px;
+    font-style: italic;
+    font-family: 'Georgia', serif;
+    animation: fadeIn 0.8s ease-out 0.6s both;
+  }
+
+  /* === Transitions between questions === */
+  .card.exiting {
+    animation: fadeOutDown 0.3s ease-in forwards;
+  }
+  @keyframes fadeOutDown {
+    to { opacity: 0; transform: translateY(-12px); }
+  }
+
+  @media (max-width: 480px) {
+    .header h1 { font-size: 34px; }
+    .q-text { font-size: 17px; }
+    .option { font-size: 14px; padding: 12px 14px; }
+    .result .score { font-size: 52px; }
+    .result .verdict { font-size: 26px; }
+    .btn { padding: 11px 24px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="eyebrow">ВИКТОРИНА</div>
+    <h1>«Комиссар»</h1>
+    <div class="year">1 9 6 7</div>
+    <div class="desc">Проверьте, что вы запомнили — 5 вопросов</div>
+  </div>
+
+  <div class="progress-wrap" id="progress"></div>
+
+  <div id="quiz"></div>
+
+  <div class="footer">«КОМИССАР» · 1967 · АЛЕКСАНДР АСКОЛЬДОВ</div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "Кто режиссёр фильма «Комиссар»?",
+    options: [
+      "Андрей Тарковский",
+      "Александр Аскольдов",
+      "Сергей Бондарчук",
+      "Михаил Ромм"
+    ],
+    correct: 1,
+    explain: "<strong>Александр Аскольдов</strong> снял «Комиссара» в 1967 году — это его единственный художественный фильм."
+  },
+  {
+    q: "По произведению какого писателя снят фильм?",
+    options: [
+      "Михаила Шолохова",
+      "Исаака Бабеля",
+      "Василия Гроссмана",
+      "Александра Фадеева"
+    ],
+    correct: 2,
+    explain: "Фильм основан на рассказе <strong>Василия Гроссмана</strong> «В городе Бердичеве»."
+  },
+  {
+    q: "Кто сыграл главную роль — комиссара Клавдию Вавилову?",
+    options: [
+      "Инна Чурикова",
+      "Людмила Гурченко",
+      "Татьяна Самойлова",
+      "Нонна Мордюкова"
+    ],
+    correct: 3,
+    explain: "Главную роль исполнила <strong>Нонна Мордюкова</strong> — за эту работу она была названа среди десяти лучших актрис XX века."
+  },
+  {
+    q: "Сколько лет фильм пролежал «на полке» до своей премьеры?",
+    options: [
+      "Около 10 лет",
+      "Около 20 лет",
+      "Около 5 лет",
+      "Фильм вышел сразу"
+    ],
+    correct: 1,
+    explain: "Картина была снята в <strong>1967 году</strong>, а впервые показана зрителю только в <strong>1987-м</strong> — почти двадцать лет спустя."
+  },
+  {
+    q: "На каком международном фестивале фильм получил специальный приз жюри в 1988 году?",
+    options: [
+      "Каннский кинофестиваль",
+      "Венецианский кинофестиваль",
+      "Берлинский кинофестиваль",
+      "Московский кинофестиваль"
+    ],
+    correct: 2,
+    explain: "В 1988 году на <strong>Берлинском кинофестивале</strong> фильм получил специальный приз жюри «Серебряный медведь»."
+  }
+];
+
+const state = {
+  current: 0,
+  score: 0,
+  answers: []
+};
+
+const quizEl = document.getElementById('quiz');
+const progressEl = document.getElementById('progress');
+
+function renderProgress() {
+  progressEl.innerHTML = '';
+  for (let i = 0; i < questions.length; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'progress-dot';
+    if (i < state.current) dot.classList.add('done');
+    else if (i === state.current) dot.classList.add('current');
+    progressEl.appendChild(dot);
+  }
+}
+
+function letter(i) {
+  return ['А', 'Б', 'В', 'Г'][i];
+}
+
+function renderQuestion() {
+  renderProgress();
+  const q = questions[state.current];
+  // Создаём DOM-элементы программно для надёжности
+  quizEl.innerHTML = `
+    <div class="card" id="card">
+      <div class="q-num">Вопрос ${state.current + 1} из ${questions.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="options"></div>
+      <div class="explanation" id="explanation">
+        <div class="expl-text" id="expl-text"></div>
+      </div>
+      <div class="next-wrap" id="next-wrap"></div>
+    </div>
+  `;
+  const opts = document.getElementById('options');
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `
+      <span class="letter">${letter(i)}</span>
+      <span class="text">${opt}</span>
+    `;
+    btn.onclick = () => handleAnswer(i, btn);
+    opts.appendChild(btn);
+  });
+}
+
+function handleAnswer(idx, btnEl) {
+  const q = questions[state.current];
+  const opts = document.querySelectorAll('.option');
+  opts.forEach(o => o.disabled = true);
+
+  const correct = idx === q.correct;
+  if (correct) {
+    state.score++;
+    btnEl.classList.add('correct');
+    const ic = document.createElement('span');
+    ic.className = 'icon';
+    ic.textContent = '✓';
+    btnEl.appendChild(ic);
+  } else {
+    btnEl.classList.add('wrong');
+    const ic = document.createElement('span');
+    ic.className = 'icon';
+    ic.textContent = '✕';
+    btnEl.appendChild(ic);
+    // Через короткую паузу подсвечиваем правильный
+    setTimeout(() => {
+      opts[q.correct].classList.add('correct');
+      const ic2 = document.createElement('span');
+      ic2.className = 'icon';
+      ic2.textContent = '✓';
+      opts[q.correct].appendChild(ic2);
+    }, 400);
+  }
+
+  state.answers.push({ q: state.current, chosen: idx, correct });
+
+  // Показываем объяснение (текст идёт в .expl-text — отдельно от кнопки)
+  const expl = document.getElementById('explanation');
+  const explText = document.getElementById('expl-text');
+  explText.innerHTML = q.explain;
+  expl.classList.add('show');
+
+  // Кнопка «дальше» — в отдельном блоке next-wrap (не пересекается с текстом)
+  setTimeout(() => {
+    const nextWrap = document.getElementById('next-wrap');
+    const isLast = state.current >= questions.length - 1;
+    nextWrap.innerHTML = `<button class="btn" id="next-btn">${isLast ? 'Показать результат →' : 'Следующий вопрос →'}</button>`;
+    nextWrap.classList.add('show');
+    document.getElementById('next-btn').onclick = () => {
+      const card = document.getElementById('card');
+      card.classList.add('exiting');
+      setTimeout(() => {
+        state.current++;
+        if (state.current < questions.length) {
+          renderQuestion();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          renderResult();
+        }
+      }, 300);
+    };
+  }, 500);
+}
+
+function renderResult() {
+  // отмечаем все точки прогресса как done
+  state.current = questions.length;
+  renderProgress();
+
+  let verdict, msg;
+  const pct = state.score / questions.length;
+  if (pct === 1) {
+    verdict = "Превосходно!";
+    msg = "Вы внимательно слушали и отлично знаете фильм «Комиссар». Александр Аскольдов был бы доволен.";
+  } else if (pct >= 0.8) {
+    verdict = "Отличный результат";
+    msg = "Вы хорошо запомнили ключевые факты о фильме и его судьбе.";
+  } else if (pct >= 0.6) {
+    verdict = "Хороший результат";
+    msg = "Вы знакомы с основными фактами о картине. Возможно, стоит пересмотреть некоторые детали.";
+  } else if (pct >= 0.4) {
+    verdict = "Неплохо";
+    msg = "Кое-что вы запомнили — а остальное всегда можно перечитать или пересмотреть.";
+  } else {
+    verdict = "Есть над чем подумать";
+    msg = "Возможно, фильм «Комиссар» стоит посмотреть ещё раз — это того стоит.";
+  }
+
+  quizEl.innerHTML = `
+    <div class="result">
+      <div class="verdict">${verdict}</div>
+      <div class="score" id="score-num">0<span class="total"> / ${questions.length}</span></div>
+      <div class="divider"></div>
+      <div class="message">${msg}</div>
+      <button class="btn" onclick="restart()">Пройти ещё раз</button>
+    </div>
+  `;
+
+  // Анимация счёта — счётчик цифры
+  const scoreEl = document.getElementById('score-num');
+  let cur = 0;
+  const target = state.score;
+  const totalSpan = `<span class="total"> / ${questions.length}</span>`;
+  if (target === 0) {
+    scoreEl.innerHTML = `0${totalSpan}`;
+  } else {
+    const step = Math.max(1, Math.round(target / 6));
+    const interval = 120;
+    setTimeout(() => {
+      const tick = setInterval(() => {
+        cur = Math.min(target, cur + step);
+        scoreEl.innerHTML = `${cur}${totalSpan}`;
+        if (cur >= target) clearInterval(tick);
+      }, interval);
+    }, 600);
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function restart() {
+  state.current = 0;
+  state.score = 0;
+  state.answers = [];
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+
+</body>
+</html>
